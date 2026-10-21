@@ -95,7 +95,16 @@ main{max-width:1100px;margin:auto;padding:0 16px 60px}
 .row:last-child{border-bottom:0}
 .row.hd{position:sticky;top:0;background:var(--paper);z-index:2;font-size:.85rem;font-weight:600;color:var(--muted)}
 .row.hd > div{padding:12px 6px;text-align:center;line-height:1.35}
-.row.hd .ic{display:block;font-size:1.25rem}
+.row.hd .ic{display:flex;justify-content:center;margin-bottom:4px;color:var(--teal)}
+.row.hd .ic svg{width:24px;height:24px}
+.row.hd .ic.tr{color:var(--gold)}
+.ci{display:inline-flex;vertical-align:-3px;margin-left:8px}
+.ci svg{width:20px;height:20px}
+.g-b .ci{color:var(--boys)} .g-g .ci{color:var(--girls)}
+.bi{display:inline-flex;vertical-align:-3px;margin-left:6px}.bi svg{width:16px;height:16px;stroke-width:2.4}
+.name .del{display:inline-flex}.name .del svg{width:16px;height:16px;stroke-width:2.4}
+.medal{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;font-size:.78rem;font-weight:700;color:#fff}
+.medal.m1{background:#C9A13B}.medal.m2{background:#9AA7AE}.medal.m3{background:#B0764A}
 .row.hd > div:first-child{text-align:right;padding-right:18px}
 .name{display:flex;align-items:center;gap:10px;padding:10px 18px 10px 8px;position:sticky;right:0;background:var(--paper);z-index:1}
 .name .i{min-width:26px;color:var(--muted);font-size:.85rem;text-align:center}
@@ -153,8 +162,8 @@ body:not(.sub-mode) .cell:hover{background:var(--teal-soft)}
   <div class="bar">
     <input class="search" id="q" type="search" placeholder="ابحثي عن اسم…" aria-label="بحث">
     <div class="seg mode" role="group" aria-label="نوع الضغطة">
-      <button data-mode="add" aria-pressed="true">＋ إضافة نقطة</button>
-      <button data-mode="sub" aria-pressed="false">－ خصم نقطة</button>
+      <button data-mode="add" aria-pressed="true"><span class="bi" data-i="plus"></span>إضافة نقطة</button>
+      <button data-mode="sub" aria-pressed="false"><span class="bi" data-i="minus"></span>خصم نقطة</button>
     </div>
     <div class="seg sort" role="group" aria-label="الترتيب">
       <button data-sort="abc" aria-pressed="true">أبجدي</button>
@@ -180,17 +189,19 @@ body:not(.sub-mode) .cell:hover{background:var(--teal-soft)}
 <div class="toast" id="toast"></div>
 
 <script>
+const ICONS={'listen': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.6"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.6"/></svg>', 'fold': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>', 'sheets': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8.5L19 7.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8.5 12.5h7M8.5 16h5"/></svg>', 'act': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.4l-5.1 2.7 1-5.6-4.1-4 5.7-.8z"/></svg>', 'trophy': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H4.5v1.5A3 3 0 0 0 7.6 10.5M16.5 6h3v1.5a3 3 0 0 1-3.1 3M12 13.5V17M8.5 20.5h7M9.5 17h5v3.5h-5z"/></svg>', 'star8': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8l2.6 3.4 4.2-.7-.7 4.2 3.1 2.3-3.1 2.3.7 4.2-4.2-.7L12 21.2l-2.6-3.4-4.2.7.7-4.2L2.8 12l3.1-2.3-.7-4.2 4.2.7z"/></svg>', 'book': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6.5C10 4.8 7 4.3 3.5 4.8v13.5c3.5-.5 6.5 0 8.5 1.7 2-1.7 5-2.2 8.5-1.7V4.8C17 4.3 14 4.8 12 6.5z"/><path d="M12 6.5V20"/></svg>', 'lantern': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5v2M9 4.5h6M8.5 7h7l1 2.5v7.5l-1 2.5h-7l-1-2.5V9.5z"/><path d="M12 11c1.2 1.3 1.2 3 0 4.2-1.2-1.2-1.2-2.9 0-4.2zM10 19.5h4v2h-4z"/></svg>', 'sprout': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-8.5"/><path d="M12 12.5C12 8.5 9.5 6 5 6c0 4.2 2.6 6.5 7 6.5zM12 14.5c0-3.6 2.4-6 6.8-6 0 3.9-2.6 6-6.8 6z"/><path d="M7.5 21h9"/></svg>', 'plus': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>', 'minus': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg>', 'x': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'};
+const I=k=>ICONS[k];
 const ACTS=[
-  {k:'listen',n:'اسمع وأتقن',ic:'🎧'},
-  {k:'fold',n:'المطويات',ic:'📂'},
-  {k:'sheets',n:'أوراق العمل',ic:'📝'},
-  {k:'act',n:'النشاط',ic:'⭐'}
+  {k:'listen',n:'اسمع وأتقن',ic:'listen'},
+  {k:'fold',n:'المطويات',ic:'fold'},
+  {k:'sheets',n:'أوراق العمل',ic:'sheets'},
+  {k:'act',n:'النشاط',ic:'act'}
 ];
 const CLASSES=[
-  {id:'nujoom',name:'نجوم القرآن',emoji:'🌟',grade:'ثاني أول',g:'b',list:`اسامة صالح بن دغيثر الزهراني|أمير حسين احمد نجعي|أمير محمد موسى مجرشي|أنس احمد سعد كعبي|اياد محمد عبده مدبش|بتال رائد ابراهيم شراحيلي|تركي محمد عبدالله هزازي|حاكم محسن سعد العتيبي|حسام نوح بن نور المطيري|حمد راجي حمد الحكمي|خالد احمد علي جحدلي|خالد سعود فهد العتيبي|خالد عجب مبارك الدوسري|خالد مناحي ابن محسن العتيبي|خليل محمد الرصاص|راكان مساعد ضاوي العتيبي|رواد حسن علي حامدي|زياد علي احمد آل دربشي|سالم محمد سالم المجنوني|سعد مقيم ملفي الدوسري|سعود صغير علي الاثرم|سعود محمد علي الأهدل|سيف عمر منصور شوكاني|صقر احمد ابن علي علواني|عبدالاله عبدالله علي حارثي|عبدالعزيز سعد ساير العتيبي|عبدالعزيز عيسى محمد مباركي|عبدالعزيز فهد مناحي الدوسري|عبدالله علي سليم الحايطي|عبدالله محمد عايض القحطاني|عساف نقاء مطلق الشيباني|عمار محمد عبدالوهاب عبدالله|فهد غصين بن محيسن الشيباني|فهد ناصر علي مباركي|فواز علي قاسم طوهري|فيصل عبدالله يحيى عواجي|فيصل فهد أحمد النجراني|فيصل موسى علي البارقي|فيصل هشام علي فقيهي|محمد سالم بن ذيبان العتيبي|مشاري مشعل عبدالعالي العتيبي|ناصر طامي ناصر الجهني|ناصر عبدالله ناصر الدوسري|نايف عبدالمحسن عبيد البقمي|هشام عوض بدر العتيبي`},
-  {id:'ahl',name:'أهل القرآن',emoji:'📖',grade:'ثاني ثالث',g:'b',list:`احمد مازن احمد ميرغني احمد|الوليد خالد أحمد مباركي|الوليد عيسى علي بعيطي|بندر علي سفر المطيري|حسن غانم حسن القحطاني|حمد سعود حمد ابوحجيل|خالد احمد عبدالله قاضي|خالد سعيد بن فهيد العجمي|راكان عبدالعزيز عبدالكريم الغامدي|رشود علي حسن العامري|ريان عبدالله محمد الشهري|زاهر عبدالله زاهر البارقي|ساري ياسر عبدالله الاسمري|سطام سلطان عواض العتيبي|سطام نايف بن حمود العتيبي|سعد عايض سعود السعدي|سعود ذعار عاتق العتيبي|سعود هاني قاحص العتيبي|سلمان عبدالمجيد مطلق المطيري|سلمان عزيز طلق المطيري|سلمان وليد هادي ابو نيب|شايق صالح عبدالله الهاجري|ضيدان سعد ضيدان السبيعي|عبدالاله فاضل عباد المطيري|عبدالعزيز حسن عبدالله قاضي|عبدالعزيز عبدالكريم عبدالرحمن المرجان|عبدالله صالح عبدالله الغامدي|عبدالله عبدالمجيد محمود مخلوطي|عبدالله نايف بن حمود العتيبي|عزام علي احمد هزازي|غيث عبدالعزيز ضيف الله العتيبي|فارس محمد عبدالحق عبدالحميد|فهد خالد موسى الزهراني|فهد سلمان محمد الشهري|فهد نايف محمد العتيبي|مترك خالد عبدالله آل زبر|محمد ابراهيم علي مجرشي|مراد محمد جابر الاسمري|مطلق فارس منيح البقمي|مقرن محمد فالح الاسمري|ناصر سعد محمد البيشي|نايف عايض بن منيح آل جرو|نايف مقبل نايف السويداني`},
-  {id:'anwar',name:'أنوار الهدى',emoji:'🌸',grade:'ثالث / ٤',g:'g',list:`أماري عوض عرنان العتيبي|أميره سالم سليم المطيري|ترف حمود سراح الشهري|ترف زايد ناشي الشيباني|ترف عائض بخيت الغامدي|ترف مرزوق بن فهيد العتيبي|تهاني سلمان محمد مبارك علواني|جوري عبدالله فيصل العياش|حليمه محمد عبدالقادر الطيابي|حور عبدالله سعد الشهراني|داليا علي يحيى حدادي|دليل حماد فهد القحطاني|ديالا عيد محمد القحطاني|رتيل احمد علي عبيد|رتيل مرزوق بن فهيد العتيبي|رسن سليمان بن احمد قروي|رفيف محمد سيف المراني|ريتاج جهز مطلق العتيبي|سمو مناحي خالد القحطاني|سيلين محمد احمد الحربي|شهد عبدالرحمن ابكر حكمي|صفيه طارق احمد معشي|طيف خالد عواض الغيداني|لتين حسين علي سك|لينا خالد منصور العزي|ملاك محمد عبدالمنعم حاميم|منيرة عبيد مقبل البيشي|مها تركي بن طردي العتيبي|مها سليمان بن احمد الغامدي|ميلاف عوض محمد الشهري|هنادي مران سعيد العتيبي|ورد عبدالله عبدالعزيز الثنيان`},
-  {id:'baraem',name:'براعم الإيمان',emoji:'🌼',grade:'ثالث / ٢',g:'g',list:`اسيل عيسى بجاد المطيري|الين حسين علي مجرشي|بسمه سعد سمير الجابري|تولين عبدالرحمن عثمان بحري|جود حذيفه احمد نورالدائم|حور احمد محمد آل يسر|رهف احمد محمد الزهراني|ريفال شبيب مشبب العتيبي|ريم سعد سعيد القحطاني|سجى علي غريب آل الذيبه|سما صالح سعد الشهراني|سندس مشاري عبده جمعان|شهد حسن علي العسكر|عذاري عبدالعزيز سعود السعدي|غلا بدر عايض المقاطي|غنى نايف فالح القحطاني|فاطمه احمد محمد عريشي|كيان حسن محمد الاسمري|كيان سلمان عبدالرحمن حنتول|كيان نايف محمد عسيري|لارين زايد سعيد الشهري|لورين احمد خالد حنتول|ليال خالد يحي المسرحي|ليان فارس علي آل بسام|لين قايد يسلم النهدي|ملاذ احمد حسين الشهري|ملك سعيد علي الغامدي|ميار عبدالرحمن احمد الشهري|مياس موسى احمد شراحيلي|نجد عمر عايض الحافي|هياء بدر مبارك عبدالعزيز`}
+  {id:'nujoom',name:'نجوم القرآن',emoji:'star8',grade:'ثاني أول',g:'b',list:`اسامة صالح بن دغيثر الزهراني|أمير حسين احمد نجعي|أمير محمد موسى مجرشي|أنس احمد سعد كعبي|اياد محمد عبده مدبش|بتال رائد ابراهيم شراحيلي|تركي محمد عبدالله هزازي|حاكم محسن سعد العتيبي|حسام نوح بن نور المطيري|حمد راجي حمد الحكمي|خالد احمد علي جحدلي|خالد سعود فهد العتيبي|خالد عجب مبارك الدوسري|خالد مناحي ابن محسن العتيبي|خليل محمد الرصاص|راكان مساعد ضاوي العتيبي|رواد حسن علي حامدي|زياد علي احمد آل دربشي|سالم محمد سالم المجنوني|سعد مقيم ملفي الدوسري|سعود صغير علي الاثرم|سعود محمد علي الأهدل|سيف عمر منصور شوكاني|صقر احمد ابن علي علواني|عبدالاله عبدالله علي حارثي|عبدالعزيز سعد ساير العتيبي|عبدالعزيز عيسى محمد مباركي|عبدالعزيز فهد مناحي الدوسري|عبدالله علي سليم الحايطي|عبدالله محمد عايض القحطاني|عساف نقاء مطلق الشيباني|عمار محمد عبدالوهاب عبدالله|فهد غصين بن محيسن الشيباني|فهد ناصر علي مباركي|فواز علي قاسم طوهري|فيصل عبدالله يحيى عواجي|فيصل فهد أحمد النجراني|فيصل موسى علي البارقي|فيصل هشام علي فقيهي|محمد سالم بن ذيبان العتيبي|مشاري مشعل عبدالعالي العتيبي|ناصر طامي ناصر الجهني|ناصر عبدالله ناصر الدوسري|نايف عبدالمحسن عبيد البقمي|هشام عوض بدر العتيبي`},
+  {id:'ahl',name:'أهل القرآن',emoji:'book',grade:'ثاني ثالث',g:'b',list:`احمد مازن احمد ميرغني احمد|الوليد خالد أحمد مباركي|الوليد عيسى علي بعيطي|بندر علي سفر المطيري|حسن غانم حسن القحطاني|حمد سعود حمد ابوحجيل|خالد احمد عبدالله قاضي|خالد سعيد بن فهيد العجمي|راكان عبدالعزيز عبدالكريم الغامدي|رشود علي حسن العامري|ريان عبدالله محمد الشهري|زاهر عبدالله زاهر البارقي|ساري ياسر عبدالله الاسمري|سطام سلطان عواض العتيبي|سطام نايف بن حمود العتيبي|سعد عايض سعود السعدي|سعود ذعار عاتق العتيبي|سعود هاني قاحص العتيبي|سلمان عبدالمجيد مطلق المطيري|سلمان عزيز طلق المطيري|سلمان وليد هادي ابو نيب|شايق صالح عبدالله الهاجري|ضيدان سعد ضيدان السبيعي|عبدالاله فاضل عباد المطيري|عبدالعزيز حسن عبدالله قاضي|عبدالعزيز عبدالكريم عبدالرحمن المرجان|عبدالله صالح عبدالله الغامدي|عبدالله عبدالمجيد محمود مخلوطي|عبدالله نايف بن حمود العتيبي|عزام علي احمد هزازي|غيث عبدالعزيز ضيف الله العتيبي|فارس محمد عبدالحق عبدالحميد|فهد خالد موسى الزهراني|فهد سلمان محمد الشهري|فهد نايف محمد العتيبي|مترك خالد عبدالله آل زبر|محمد ابراهيم علي مجرشي|مراد محمد جابر الاسمري|مطلق فارس منيح البقمي|مقرن محمد فالح الاسمري|ناصر سعد محمد البيشي|نايف عايض بن منيح آل جرو|نايف مقبل نايف السويداني`},
+  {id:'anwar',name:'أنوار الهدى',emoji:'lantern',grade:'ثالث / ٤',g:'g',list:`أماري عوض عرنان العتيبي|أميره سالم سليم المطيري|ترف حمود سراح الشهري|ترف زايد ناشي الشيباني|ترف عائض بخيت الغامدي|ترف مرزوق بن فهيد العتيبي|تهاني سلمان محمد مبارك علواني|جوري عبدالله فيصل العياش|حليمه محمد عبدالقادر الطيابي|حور عبدالله سعد الشهراني|داليا علي يحيى حدادي|دليل حماد فهد القحطاني|ديالا عيد محمد القحطاني|رتيل احمد علي عبيد|رتيل مرزوق بن فهيد العتيبي|رسن سليمان بن احمد قروي|رفيف محمد سيف المراني|ريتاج جهز مطلق العتيبي|سمو مناحي خالد القحطاني|سيلين محمد احمد الحربي|شهد عبدالرحمن ابكر حكمي|صفيه طارق احمد معشي|طيف خالد عواض الغيداني|لتين حسين علي سك|لينا خالد منصور العزي|ملاك محمد عبدالمنعم حاميم|منيرة عبيد مقبل البيشي|مها تركي بن طردي العتيبي|مها سليمان بن احمد الغامدي|ميلاف عوض محمد الشهري|هنادي مران سعيد العتيبي|ورد عبدالله عبدالعزيز الثنيان`},
+  {id:'baraem',name:'براعم الإيمان',emoji:'sprout',grade:'ثالث / ٢',g:'g',list:`اسيل عيسى بجاد المطيري|الين حسين علي مجرشي|بسمه سعد سمير الجابري|تولين عبدالرحمن عثمان بحري|جود حذيفه احمد نورالدائم|حور احمد محمد آل يسر|رهف احمد محمد الزهراني|ريفال شبيب مشبب العتيبي|ريم سعد سعيد القحطاني|سجى علي غريب آل الذيبه|سما صالح سعد الشهراني|سندس مشاري عبده جمعان|شهد حسن علي العسكر|عذاري عبدالعزيز سعود السعدي|غلا بدر عايض المقاطي|غنى نايف فالح القحطاني|فاطمه احمد محمد عريشي|كيان حسن محمد الاسمري|كيان سلمان عبدالرحمن حنتول|كيان نايف محمد عسيري|لارين زايد سعيد الشهري|لورين احمد خالد حنتول|ليال خالد يحي المسرحي|ليان فارس علي آل بسام|لين قايد يسلم النهدي|ملاذ احمد حسين الشهري|ملك سعيد علي الغامدي|ميار عبدالرحمن احمد الشهري|مياس موسى احمد شراحيلي|نجد عمر عايض الحافي|هياء بدر مبارك عبدالعزيز`}
 ];
 const KEY='maryam-islamic-activities-v1';
 const ar=n=>Number(n).toLocaleString('ar-SA');
@@ -224,15 +235,15 @@ const meta=()=>CLASSES.find(c=>c.id===cur);
 function renderPicker(){
   ['b','g'].forEach(g=>{
     document.getElementById('cls-'+g).innerHTML=CLASSES.filter(c=>c.g===g).map(c=>
-      `<button data-c="${c.id}" aria-pressed="${c.id===cur}"><span class="nm">${c.name} ${c.emoji}</span><span class="gr"><bdi>${c.grade}</bdi> · <bdi>${ar(data.classes[c.id].length)} ${g==='b'?'طالب':'طالبة'}</bdi></span></button>`).join('');
+      `<button data-c="${c.id}" aria-pressed="${c.id===cur}"><span class="nm"><span class="ci">${I(c.emoji)}</span>${c.name}</span><span class="gr"><bdi>${c.grade}</bdi> · <bdi>${ar(data.classes[c.id].length)} ${g==='b'?'طالب':'طالبة'}</bdi></span></button>`).join('');
   });
 }
 function renderTop(){
   const list=[...data.classes[cur]].filter(s=>total(s)>0).sort((a,b)=>total(b)-total(a)).slice(0,3);
-  const medals=['🥇','🥈','🥉'];
+  
   const el=document.getElementById('top');
   el.innerHTML=`<span class="lbl">أوائل ${meta().name}:</span>`+(list.length?list.map((s,i)=>
-    `<span class="chip">${medals[i]} ${s.name.split(' ')[0]} <span class="pts">${ar(total(s))}</span></span>`).join('')
+    `<span class="chip"><span class="medal m${i+1}">${ar(i+1)}</span>${s.name.split(' ')[0]} <span class="pts">${ar(total(s))}</span></span>`).join('')
     :`<span class="empty">لم تُسجَّل نقاط بعد — ابدئي بالضغط على خانات الأنشطة.</span>`);
 }
 function renderGrid(){
@@ -241,10 +252,10 @@ function renderGrid(){
   if(q) list=list.filter(s=>s.name.includes(q));
   if(sort==='pts') list.sort((a,b)=>total(b)-total(a));
   else list.sort((a,b)=>a.name.localeCompare(b.name,'ar'));
-  let h=`<div class="row hd"><div>${boy?'اسم الطالب':'اسم الطالبة'}</div>${ACTS.map(a=>`<div><span class="ic">${a.ic}</span>${a.n}</div>`).join('')}<div><span class="ic">🏆</span>المجموع</div></div>`;
+  let h=`<div class="row hd"><div>${boy?'اسم الطالب':'اسم الطالبة'}</div>${ACTS.map(a=>`<div><span class="ic">${I(a.ic)}</span>${a.n}</div>`).join('')}<div><span class="ic tr">${I('trophy')}</span>المجموع</div></div>`;
   h+=list.map((s,n)=>`<div class="row" data-id="${s.id}">
     <div class="name"><span class="i">${ar(n+1)}</span>${editing
-      ?`<input value="${s.name.replace(/"/g,'&quot;')}" data-rename="${s.id}" aria-label="الاسم"><button class="del" data-del="${s.id}" aria-label="حذف">✕</button>`
+      ?`<input value="${s.name.replace(/"/g,'&quot;')}" data-rename="${s.id}" aria-label="الاسم"><button class="del" data-del="${s.id}" aria-label="حذف">${I('x')}</button>`
       :`<span class="t">${s.name}</span>`}</div>
     ${s.s.map((v,k)=>`<button class="cell ${v?'has':''}" data-k="${k}" aria-label="${ACTS[k].n}: ${v}">${ar(v)}</button>`).join('')}
     <div class="tot">${ar(total(s))}</div></div>`).join('');
@@ -304,6 +315,7 @@ document.addEventListener('change',e=>{
 document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim();renderGrid()});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='newName')document.getElementById('addBtn').click()});
 
+document.querySelectorAll('.bi').forEach(e=>e.innerHTML=I(e.dataset.i));
 (async()=>{
   const raw=await store.get();
   try{data=raw?JSON.parse(raw):seed()}catch(e){data=seed()}
